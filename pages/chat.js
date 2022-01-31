@@ -1,33 +1,63 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React from 'react';
 import appConfig from '../config.json';
+import { useRouter } from 'next/router';
+import { createClient } from '@supabase/supabase-js'
+import { ButtonSendSticker } from '../src/components/ButtonSendSticker';
+
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzU3NDY5NCwiZXhwIjoxOTU5MTUwNjk0fQ.UVdSxGbuBjRsGI_L4_6999I4YvLZVICCvdm_bRILDZ0'
+const SUPABASE_URL = 'https://gmpfwevuhqosnynsdicd.supabase.co'
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 export default function ChatPage() {
+  const roteamento = useRouter();
+  const usuarioLogado = roteamento.query.username;
   const [mensagem, setMensagem] = React.useState('');
-  const [listaDeMensagens, setListaDeMensagens] = React.useState([]);
+  const [listaDeMensagens, setListaDeMensagens] = React.useState([
+    {
+      id: 1,
+      de: 'dreackdown',
+      texto: ':sticker: https://c.tenor.com/TKpmh4WFEsAAAAAC/alura-gaveta-filmes.gif',
+    },
+    {
+      id: 2,
+      de: 'peas',
+      texto: 'O ternário é meio triste'
+    }
+  ]);
 
-  /*
-  // Usuário
-  - Usuário digita no campo textarea
-  - Aperta enter para enviar
-  - Tem que adicionar o texto na listagem
-  
-  // Dev
-  - [X] Campo criado
-  - [X] Vamos usar o onChange usa o useState (ter if pra caso seja enter pra limpar a variavel)
-  - [X] Lista de mensagens 
-  */
+  React.useEffect(() => {
+    supabaseClient
+      .from('mensagens')
+      .select('*')
+      .order('id', { ascending: false })
+      .then(({ data }) => {
+        console.log('Dados da consulta:', data)
+        // setListaDeMensagens(data)
+      })
+  }, [])
+
   function handleNovaMensagem(novaMensagem) {
     const mensagem = {
-      id: listaDeMensagens.length + 1,
-      de: 'vanessametonini',
+      // id: listaDeMensagens.length + 1,
+      de: usuarioLogado,
       texto: novaMensagem,
     };
 
-    setListaDeMensagens([
-      mensagem,
-      ...listaDeMensagens,
-    ]);
+    supabaseClient
+      .from('mensagens')
+      .insert([
+        //Tem que ser um objeto com os MESMOS CAMPOS que você escreveu no supabase
+        mensagem
+      ])
+      .then(({ data }) => {
+        console.log('Criando mensagem:', data)
+        setListaDeMensagens([
+          data[0],
+          ...listaDeMensagens,
+        ]);
+      })
+
     setMensagem('');
   }
 
@@ -108,6 +138,7 @@ export default function ChatPage() {
                 color: appConfig.theme.colors.neutrals[200],
               }}
             />
+            <ButtonSendSticker />
           </Box>
         </Box>
       </Box>
@@ -174,7 +205,7 @@ function MessageList(props) {
                   display: 'inline-block',
                   marginRight: '8px',
                 }}
-                src={`https://github.com/vanessametonini.png`}
+                src={`https://github.com/${mensagem.de}.png`}
               />
               <Text tag="strong">
                 {mensagem.de}
@@ -190,7 +221,13 @@ function MessageList(props) {
                 {(new Date().toLocaleDateString())}
               </Text>
             </Box>
-            {mensagem.texto}
+            {mensagem.texto.startsWith(':sticker:')
+              ? (
+                'É sticker'
+              ) : (
+                mensagem.texto
+              )}
+            {/* {mensagem.texto} */}
           </Text>
         );
       })}
