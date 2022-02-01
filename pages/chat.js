@@ -9,21 +9,30 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5v
 const SUPABASE_URL = 'https://gmpfwevuhqosnynsdicd.supabase.co'
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
+function escutaMensagensEmTempoReal(adicionaMensagem) {
+  return supabaseClient
+    .from('mensagens')
+    .on('INSERT', (respostaLive) => {
+      adicionaMensagem(respostaLive.new);
+    })
+    .subscribe();
+}
+
 export default function ChatPage() {
   const roteamento = useRouter();
   const usuarioLogado = roteamento.query.username;
   const [mensagem, setMensagem] = React.useState('');
   const [listaDeMensagens, setListaDeMensagens] = React.useState([
-    {
-      id: 1,
-      de: 'dreackdown',
-      texto: ':sticker: https://c.tenor.com/TKpmh4WFEsAAAAAC/alura-gaveta-filmes.gif',
-    },
-    {
-      id: 2,
-      de: 'peas',
-      texto: 'O ternário é meio triste'
-    }
+    // {
+    //   id: 1,
+    //   de: 'dreackdown',
+    //   texto: ':sticker: https://c.tenor.com/TKpmh4WFEsAAAAAC/alura-gaveta-filmes.gif',
+    // },
+    // {
+    //   id: 2,
+    //   de: 'peas',
+    //   texto: 'O ternário é meio triste'
+    // }
   ]);
 
   React.useEffect(() => {
@@ -32,9 +41,25 @@ export default function ChatPage() {
       .select('*')
       .order('id', { ascending: false })
       .then(({ data }) => {
-        console.log('Dados da consulta:', data)
-        // setListaDeMensagens(data)
+        // console.log('Dados da consulta:', data)
+        setListaDeMensagens(data);
       })
+
+
+    const subscription = escutaMensagensEmTempoReal((novaMensagem) => {
+      setListaDeMensagens((valorAtualDaLista) => {
+        console.log('valorAtualDaLista:', valorAtualDaLista);
+        return [
+          novaMensagem,
+          ...valorAtualDaLista,
+        ]
+      });
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    }
+
   }, [])
 
   function handleNovaMensagem(novaMensagem) {
@@ -51,11 +76,6 @@ export default function ChatPage() {
         mensagem
       ])
       .then(({ data }) => {
-        console.log('Criando mensagem:', data)
-        setListaDeMensagens([
-          data[0],
-          ...listaDeMensagens,
-        ]);
       })
 
     setMensagem('');
@@ -138,7 +158,13 @@ export default function ChatPage() {
                 color: appConfig.theme.colors.neutrals[200],
               }}
             />
-            <ButtonSendSticker />
+            {/* CallBack */}
+            <ButtonSendSticker
+              onStickerClick={(sticker) => {
+                // console.log('[USANDO O COMPONENTE] Salva esse sticker no banco', sticker);
+                handleNovaMensagem(':sticker: ' + sticker);
+              }}
+            />
           </Box>
         </Box>
       </Box>
@@ -165,7 +191,7 @@ function Header() {
 }
 
 function MessageList(props) {
-  console.log(props);
+  // console.log(props);
   return (
     <Box
       tag="ul"
@@ -221,12 +247,18 @@ function MessageList(props) {
                 {(new Date().toLocaleDateString())}
               </Text>
             </Box>
+            {/* [Declarativo] */}
+            {/* Condicional: {mensagem.texto.startsWith(':sticker:').toString()} */}
             {mensagem.texto.startsWith(':sticker:')
               ? (
-                'É sticker'
+                <Image src={mensagem.texto.replace(':sticker:', '')} />
               ) : (
                 mensagem.texto
               )}
+            {/* if mensagem de texto possui stickers:
+                           mostra a imagem
+                        else 
+                           mensagem.texto */}
             {/* {mensagem.texto} */}
           </Text>
         );
