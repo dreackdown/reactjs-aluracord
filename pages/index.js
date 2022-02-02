@@ -46,7 +46,7 @@ export default function PaginaInicial() {
           justifyContent: 'center',
           backgroundColor: appConfig.theme.colors.primary[500],
           backgroundImage:
-            'url(https://virtualbackgrounds.site/wp-content/uploads/2020/08/the-matrix-digital-rain.jpg)',
+            'url(https://virtualbackgrounds.site/wp-content/uploads/2020/12/bright-gaming-room-setup.jpg)',
           backgroundRepeat: 'no-repeat',
           backgroundSize: 'cover',
           backgroundBlendMode: 'multiply'
@@ -118,7 +118,7 @@ export default function PaginaInicial() {
                 console.log('usuário digitou', event.target.value)
                 //onda ta o valor?
                 const valor = event.target.value
-                //Trocar o valor da variavel
+                //   //Trocar o valor da variavel
                 setUsername(valor)
               }}
               fullWidth
@@ -139,7 +139,7 @@ export default function PaginaInicial() {
                 contrastColor: appConfig.theme.colors.neutrals['000'],
                 mainColor: appConfig.theme.colors.primary[500],
                 mainColorLight: appConfig.theme.colors.primary[400],
-                mainColorStrong: appConfig.theme.colors.primary[600]
+                mainColorStrong: appConfig.theme.colors.primary[700]
               }}
             />
           </Box>
