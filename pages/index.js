@@ -37,6 +37,12 @@ export default function PaginaInicial() {
   const [username, setUsername] = React.useState('dreackdown')
   const roteamento = useRouter()
 
+  function handleUsernameInput(event) {
+    if (event.target.value.length > 1) {
+      setUsername(event.target.value);
+    }
+  }
+
   return (
     <>
       <Box
@@ -113,14 +119,7 @@ export default function PaginaInicial() {
             /> */}
 
             <TextField
-              value={username}
-              onChange={function (event) {
-                console.log('usuário digitou', event.target.value)
-                //onda ta o valor?
-                const valor = event.target.value
-                //   //Trocar o valor da variavel
-                setUsername(valor)
-              }}
+              onChange={(event) => handleUsernameInput(event)}
               fullWidth
               textFieldColors={{
                 neutral: {
